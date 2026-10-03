@@ -3,3 +3,5 @@ documentation: "https://knowledgebase.cookiebees.io/tracking/data-layer-and-cbq/
 versions:
   - sha: fa3496ee4bcae01e1ee6087c8ee7b051108dfac4
     changeNotes: Initial release.
+  - sha: 3b32628e87a1359712ce763e891a051e5faabace
+    changeNotes: Thumbnail and logo match the Cookiebees app icon.
