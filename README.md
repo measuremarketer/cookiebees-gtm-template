@@ -20,7 +20,7 @@ Use this template when your store's data layer is not in GA4's standard shape, o
 2. Create a tag of type **Cookiebees**.
 3. Enter your **tracking key**. It is in Cookiebees under Settings, Tracking, Install the code, and starts with `mmtrk_`.
 4. Choose the **event name**.
-5. Under **The Cookiebees tag**, keep "Is already installed on my site" if the Cookiebees tag is on your pages (recommended: it then loads from your own tracking domain). Otherwise choose "Load it for me".
+5. The Cookiebees tag itself goes in your page head, above the Tag Manager snippet (Cookiebees: Settings, Tracking, Install the code). The template never loads it; it only sends events through it, and events fired before the tag has loaded wait and go out in order.
 6. Map your order values and customer information, add a trigger for the event, and publish.
 
 Create one tag per event.
@@ -35,7 +35,6 @@ If the Cookiebees tag on your site listens to the data layer itself (its address
 | --- | --- |
 | Cookiebees tracking key | Your workspace's key, starting with `mmtrk_`. |
 | Event name | A standard event, or Custom with your own name. |
-| The Cookiebees tag | Whether the tag is already on the site, or the template should load it. |
 | Read the ecommerce object from the data layer | On when your data layer pushes GA4's `ecommerce` object. |
 | Map order values | One row per value your data layer names differently. Mapped values win over the ecommerce object. |
 | Customer data | One row per piece of customer information. |
@@ -48,7 +47,7 @@ If the Cookiebees tag on your site listens to the data layer itself (its address
 | Permission | Why |
 | --- | --- |
 | Accesses global variables `cbq`, `cbq.q` | The queue the Cookiebees tag reads events from. |
-| Injects scripts from `https://app.cookiebees.io/*` | Only when you choose "Load it for me". |
+| Logs to the console in preview mode | Says when an event was queued before the Cookiebees tag had loaded. |
 | Reads the data layer key `ecommerce` | Only when "Read the ecommerce object" is on. |
 
 ## Documentation
