@@ -56,8 +56,34 @@ ___TEMPLATE_PARAMETERS___
   },
   {
     "type": "SELECT",
+    "name": "mode",
+    "displayName": "What this tag does",
+    "macrosInSelect": false,
+    "simpleValueType": true,
+    "defaultValue": "event",
+    "help": "Send an event: one event, with its order values and customer data. Set customer data: no event; the customer data you map is remembered by the Cookiebees tag and attached to every event sent later on this page, by this template, by the data layer or by the tag itself. Fire it on All Pages, or when the customer becomes known (login, checkout, a form).",
+    "selectItems": [
+      {
+        "value": "event",
+        "displayValue": "Send an event"
+      },
+      {
+        "value": "set",
+        "displayValue": "Set customer data for every later event"
+      }
+    ]
+  },
+  {
+    "type": "SELECT",
     "name": "eventName",
     "displayName": "Event name",
+    "enablingConditions": [
+      {
+        "paramName": "mode",
+        "paramValue": "event",
+        "type": "EQUALS"
+      }
+    ],
     "macrosInSelect": false,
     "simpleValueType": true,
     "defaultValue": "purchase",
@@ -157,6 +183,13 @@ ___TEMPLATE_PARAMETERS___
     "name": "ecommerceGroup",
     "displayName": "Order and product data",
     "groupStyle": "ZIPPY_OPEN",
+    "enablingConditions": [
+      {
+        "paramName": "mode",
+        "paramValue": "event",
+        "type": "EQUALS"
+      }
+    ],
     "subParams": [
       {
         "type": "CHECKBOX",
@@ -261,7 +294,7 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "LABEL",
         "name": "userLabel",
-        "displayName": "Send everything the checkout knows. Cookiebees also finds customer data already in the data layer; values mapped here win."
+        "displayName": "Send everything the page knows: the checkout form, a logged-in account, the data layer. Cookiebees also finds customer data already in the data layer; values mapped here win. Set once with 'Set customer data' and every later event on the page carries it."
       },
       {
         "type": "SIMPLE_TABLE",
@@ -342,6 +375,13 @@ ___TEMPLATE_PARAMETERS___
     "name": "customGroup",
     "displayName": "Your own parameters",
     "groupStyle": "ZIPPY_CLOSED",
+    "enablingConditions": [
+      {
+        "paramName": "mode",
+        "paramValue": "event",
+        "type": "EQUALS"
+      }
+    ],
     "subParams": [
       {
         "type": "SIMPLE_TABLE",
@@ -384,14 +424,6 @@ const logToConsole = require('logToConsole');
 // See https://knowledgebase.cookiebees.io/tracking/data-layer-and-cbq/
 const cbq = createArgumentsQueue('cbq', 'cbq.q');
 
-const eventName = data.eventName === 'custom' ? data.customEventName : data.eventName;
-const params = {};
-
-if (data.readEcommerce) {
-  const ecommerce = copyFromDataLayer('ecommerce');
-  if (getType(ecommerce) === 'object') params.ecommerce = ecommerce;
-}
-
 const has = (v) => v !== undefined && v !== null && v !== '';
 const addRows = (rows, target) => {
   let n = 0;
@@ -399,6 +431,23 @@ const addRows = (rows, target) => {
   rows.forEach((row) => { if (has(row.name) && has(row.value)) { target[row.name] = row.value; n++; } });
   return n;
 };
+
+// Set customer data: no event. The tag remembers it for this page and
+// attaches it to every event sent afterwards, whoever sends it.
+if (data.mode === 'set') {
+  const known = {};
+  if (addRows(data.userData, known) > 0) cbq('set', 'user_data', known);
+  data.gtmOnSuccess();
+  return;
+}
+
+const eventName = data.eventName === 'custom' ? data.customEventName : data.eventName;
+const params = {};
+
+if (data.readEcommerce) {
+  const ecommerce = copyFromDataLayer('ecommerce');
+  if (getType(ecommerce) === 'object') params.ecommerce = ecommerce;
+}
 
 // Mapped values sit at the top level, where they win over the ecommerce object.
 addRows(data.orderParams, params);
@@ -639,6 +688,17 @@ scenarios:
     runCode(mockData);
     assertThat(sent[1]).isEqualTo('quiz_completed');
     assertApi('logToConsole').wasCalled();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Set customer data remembers it for every later event and sends no event
+  code: |-
+    const mockData = { mode: 'set', userData: [{name: 'email', value: 'asha@example.com'}, {name: 'phone', value: '+919876543210'}] };
+    let sent;
+    mock('createArgumentsQueue', () => function() { sent = arguments; });
+    runCode(mockData);
+    assertThat(sent[0]).isEqualTo('set');
+    assertThat(sent[1]).isEqualTo('user_data');
+    assertThat(sent[2].email).isEqualTo('asha@example.com');
+    assertThat(sent[2].phone).isEqualTo('+919876543210');
     assertApi('gtmOnSuccess').wasCalled();
 
 
