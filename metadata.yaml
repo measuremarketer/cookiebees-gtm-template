@@ -5,3 +5,5 @@ versions:
     changeNotes: Initial release.
   - sha: 3b32628e87a1359712ce763e891a051e5faabace
     changeNotes: Thumbnail and logo match the Cookiebees app icon.
+  - sha: 40671af749980bdfb8fc3cd260457e1ed65cd7f5
+    changeNotes: The template only sends events; the Cookiebees tag lives in the page head.
