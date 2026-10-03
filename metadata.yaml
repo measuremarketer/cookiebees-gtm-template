@@ -7,3 +7,5 @@ versions:
     changeNotes: Thumbnail and logo match the Cookiebees app icon.
   - sha: 40671af749980bdfb8fc3cd260457e1ed65cd7f5
     changeNotes: The template only sends events; the Cookiebees tag lives in the page head.
+  - sha: d83b9ddca48ee916e1447e1b2d7560de7baa1342
+    changeNotes: Set customer data once for every later event.
